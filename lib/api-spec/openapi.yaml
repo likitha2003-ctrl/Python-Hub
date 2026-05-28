@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: repl
+    description: Python REPL operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /execute:
+    post:
+      operationId: executeCode
+      tags: [repl]
+      summary: Execute Python code
+      description: Executes a snippet of Python code and returns stdout/stderr
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CodeInput"
+      responses:
+        "200":
+          description: Execution result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutionResult"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +54,23 @@ components:
           type: string
       required:
         - status
-
+    CodeInput:
+      type: object
+      properties:
+        code:
+          type: string
+      required:
+        - code
+    ExecutionResult:
+      type: object
+      properties:
+        stdout:
+          type: string
+        stderr:
+          type: string
+        exitCode:
+          type: integer
+      required:
+        - stdout
+        - stderr
+        - exitCode

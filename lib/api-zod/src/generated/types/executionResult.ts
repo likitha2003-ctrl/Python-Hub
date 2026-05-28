@@ -5,17 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-export interface HealthStatus {
-  status: string;
-}
-
-export interface CodeInput {
-  code: string;
-}
 
 export interface ExecutionResult {
   stdout: string;
   stderr: string;
   exitCode: number;
 }
-
