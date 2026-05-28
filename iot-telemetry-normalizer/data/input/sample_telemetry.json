@@ -1,0 +1,42 @@
+[
+  {
+    "device_id": "sensor-001",
+    "ts": 1700000000,
+    "temp_f": 98.6,
+    "humidity_pct": 65.3,
+    "battery_mv": 3700,
+    "status": "active"
+  },
+  {
+    "device_id": "sensor-002",
+    "ts": 1700000060,
+    "temperature": 22.0,
+    "humidity": 71.5,
+    "battery_mv": 3550,
+    "status": "active"
+  },
+  {
+    "device_id": "sensor-003",
+    "ts": 1700000120,
+    "temp_f": 32.0,
+    "humidity_pct": 90.0,
+    "battery_mv": 2900,
+    "status": "low_battery"
+  },
+  {
+    "device_id": "sensor-004",
+    "ts": 1700000180,
+    "temp_f": null,
+    "humidity_pct": 55.0,
+    "battery_mv": 3800,
+    "status": "active"
+  },
+  {
+    "device_id": "sensor-005",
+    "ts": 1700000240,
+    "temperature": -5.0,
+    "humidity": 80.0,
+    "battery_mv": 3400,
+    "status": "active"
+  }
+]

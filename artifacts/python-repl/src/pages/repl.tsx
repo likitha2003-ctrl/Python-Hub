@@ -4,11 +4,67 @@ import { Button } from "@/components/ui/button";
 import { Play, Loader2, Terminal, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const DEFAULT_CODE = `# Welcome to the Python REPL
-def greet(name):
-    print(f"Hello, {name}!")
+const DEFAULT_CODE = `# IoT Telemetry Data Normalizer — Demo
+# Converts raw device readings into a clean, consistent schema.
 
-greet("Developer")
+import json
+from datetime import datetime, timezone
+
+def fahrenheit_to_celsius(temp_f):
+    """Convert Fahrenheit to Celsius, rounded to 2 decimal places."""
+    return round((temp_f - 32) * 5 / 9, 2)
+
+def unix_to_iso8601(timestamp):
+    """Convert a Unix epoch (int) to an ISO 8601 UTC string."""
+    dt = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+def normalize_record(record):
+    """Normalize a single raw telemetry record."""
+    device_id = record.get("device_id")
+    if not device_id or "ts" not in record:
+        print(f"  [SKIP] Missing required field in: {record}")
+        return None
+
+    # Resolve temperature — handles both Fahrenheit and Celsius fields
+    if "temp_f" in record and record["temp_f"] is not None:
+        temp_c = fahrenheit_to_celsius(record["temp_f"])
+        print(f"  [CONV] {device_id}: {record['temp_f']}°F → {temp_c}°C")
+    elif "temperature" in record:
+        temp_c = round(float(record["temperature"]), 2)
+        print(f"  [PASS] {device_id}: {temp_c}°C (already Celsius)")
+    else:
+        temp_c = None
+        print(f"  [WARN] {device_id}: no temperature field found")
+
+    humidity = record.get("humidity_pct") or record.get("humidity")
+
+    return {
+        "device_id": device_id,
+        "timestamp_utc": unix_to_iso8601(record["ts"]),
+        "temperature_celsius": temp_c,
+        "humidity_percent": round(float(humidity), 2) if humidity is not None else None,
+        "battery_millivolts": record.get("battery_mv"),
+        "status": record.get("status"),
+        "normalized": True,
+    }
+
+# --- Sample raw payload (mixed field names and units) ---
+raw_data = [
+    {"device_id": "sensor-001", "ts": 1700000000, "temp_f": 98.6,  "humidity_pct": 65.3, "battery_mv": 3700, "status": "active"},
+    {"device_id": "sensor-002", "ts": 1700000060, "temperature": 22.0, "humidity": 71.5, "battery_mv": 3550, "status": "active"},
+    {"device_id": "sensor-003", "ts": 1700000120, "temp_f": 32.0,  "humidity_pct": 90.0, "battery_mv": 2900, "status": "low_battery"},
+    {"device_id": "sensor-004", "ts": 1700000180, "temp_f": None,  "humidity_pct": 55.0, "battery_mv": 3800, "status": "active"},
+]
+
+print("IoT Telemetry Data Normalizer")
+print("=" * 40)
+
+results = [r for record in raw_data if (r := normalize_record(record)) is not None]
+
+print()
+print(f"Normalized {len(results)} of {len(raw_data)} record(s):")
+print(json.dumps(results, indent=2))
 `;
 
 export default function REPL() {

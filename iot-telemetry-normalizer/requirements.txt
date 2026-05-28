@@ -1,0 +1,10 @@
+# IoT Telemetry Data Normalizer — Dependencies
+# All packages in the standard library; no third-party installs required.
+#
+# Python >= 3.8 is recommended.
+#
+# If you add future dependencies (e.g. for database output or API integration),
+# list them here with pinned versions:
+#
+#   requests==2.31.0
+#   pydantic==2.6.0
