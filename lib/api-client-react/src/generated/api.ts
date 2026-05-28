@@ -21,8 +21,13 @@ import type {
 
 import type {
   CodeInput,
+  ErrorResponse,
   ExecutionResult,
-  HealthStatus
+  FileContent,
+  FileTree,
+  GetFileContentParams,
+  HealthStatus,
+  RunInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -46,7 +51,6 @@ export const getHealthCheckUrl = () => {
 }
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const healthCheck = async ( options?: RequestInit): Promise<HealthStatus> => {
@@ -115,6 +119,241 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
 
 
 
+export const getGetProjectTreeUrl = () => {
+
+
+
+
+  return `/api/project/tree`
+}
+
+/**
+ * Returns the full file and directory tree of the Python project
+ * @summary Get project file tree
+ */
+export const getProjectTree = async ( options?: RequestInit): Promise<FileTree> => {
+
+  return customFetch<FileTree>(getGetProjectTreeUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetProjectTreeQueryKey = () => {
+    return [
+    `/api/project/tree`
+    ] as const;
+    }
+
+
+export const getGetProjectTreeQueryOptions = <TData = Awaited<ReturnType<typeof getProjectTree>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProjectTree>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProjectTreeQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectTree>>> = ({ signal }) => getProjectTree({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProjectTree>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetProjectTreeQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectTree>>>
+export type GetProjectTreeQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get project file tree
+ */
+
+export function useGetProjectTree<TData = Awaited<ReturnType<typeof getProjectTree>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProjectTree>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetProjectTreeQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetFileContentUrl = (params: GetFileContentParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/project/file?${stringifiedParams}` : `/api/project/file`
+}
+
+/**
+ * Returns the text content of a file within the project
+ * @summary Get file content
+ */
+export const getFileContent = async (params: GetFileContentParams, options?: RequestInit): Promise<FileContent> => {
+
+  return customFetch<FileContent>(getGetFileContentUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFileContentQueryKey = (params?: GetFileContentParams,) => {
+    return [
+    `/api/project/file`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetFileContentQueryOptions = <TData = Awaited<ReturnType<typeof getFileContent>>, TError = ErrorType<ErrorResponse>>(params: GetFileContentParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFileContent>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFileContentQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFileContent>>> = ({ signal }) => getFileContent(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFileContent>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFileContentQueryResult = NonNullable<Awaited<ReturnType<typeof getFileContent>>>
+export type GetFileContentQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get file content
+ */
+
+export function useGetFileContent<TData = Awaited<ReturnType<typeof getFileContent>>, TError = ErrorType<ErrorResponse>>(
+ params: GetFileContentParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFileContent>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFileContentQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getRunCommandUrl = () => {
+
+
+
+
+  return `/api/project/run`
+}
+
+/**
+ * Runs a predefined project command (pipeline or tests) and streams the output
+ * @summary Run a project command
+ */
+export const runCommand = async (runInput: RunInput, options?: RequestInit): Promise<ExecutionResult> => {
+
+  return customFetch<ExecutionResult>(getRunCommandUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      runInput,)
+  }
+);}
+
+
+
+
+export const getRunCommandMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runCommand>>, TError,{data: BodyType<RunInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof runCommand>>, TError,{data: BodyType<RunInput>}, TContext> => {
+
+const mutationKey = ['runCommand'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof runCommand>>, {data: BodyType<RunInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  runCommand(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RunCommandMutationResult = NonNullable<Awaited<ReturnType<typeof runCommand>>>
+    export type RunCommandMutationBody = BodyType<RunInput>
+    export type RunCommandMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Run a project command
+ */
+export const useRunCommand = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runCommand>>, TError,{data: BodyType<RunInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof runCommand>>,
+        TError,
+        {data: BodyType<RunInput>},
+        TContext
+      > => {
+      return useMutation(getRunCommandMutationOptions(options));
+    }
+
 export const getExecuteCodeUrl = () => {
 
 
@@ -124,8 +363,7 @@ export const getExecuteCodeUrl = () => {
 }
 
 /**
- * Executes a snippet of Python code and returns stdout/stderr
- * @summary Execute Python code
+ * @summary Execute arbitrary Python code
  */
 export const executeCode = async (codeInput: CodeInput, options?: RequestInit): Promise<ExecutionResult> => {
 
@@ -174,7 +412,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ExecuteCodeMutationError = ErrorType<unknown>
 
     /**
- * @summary Execute Python code
+ * @summary Execute arbitrary Python code
  */
 export const useExecuteCode = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof executeCode>>, TError,{data: BodyType<CodeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}

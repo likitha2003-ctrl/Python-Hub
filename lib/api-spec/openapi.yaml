@@ -1,6 +1,5 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
   description: API specification
@@ -10,15 +9,14 @@ servers:
 tags:
   - name: health
     description: Health operations
-  - name: repl
-    description: Python REPL operations
+  - name: project
+    description: IoT Telemetry Normalizer project operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -26,12 +24,79 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /project/tree:
+    get:
+      operationId: getProjectTree
+      tags: [project]
+      summary: Get project file tree
+      description: Returns the full file and directory tree of the Python project
+      responses:
+        "200":
+          description: File tree
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileTree"
+
+  /project/file:
+    get:
+      operationId: getFileContent
+      tags: [project]
+      summary: Get file content
+      description: Returns the text content of a file within the project
+      parameters:
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Relative path within the project (e.g. src/normalizer.py)
+      responses:
+        "200":
+          description: File content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileContent"
+        "400":
+          description: Invalid path
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: File not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /project/run:
+    post:
+      operationId: runCommand
+      tags: [project]
+      summary: Run a project command
+      description: Runs a predefined project command (pipeline or tests) and streams the output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunInput"
+      responses:
+        "200":
+          description: Command result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutionResult"
+
   /execute:
     post:
       operationId: executeCode
-      tags: [repl]
-      summary: Execute Python code
-      description: Executes a snippet of Python code and returns stdout/stderr
+      tags: [project]
+      summary: Execute arbitrary Python code
       requestBody:
         required: true
         content:
@@ -45,6 +110,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ExecutionResult"
+
 components:
   schemas:
     HealthStatus:
@@ -52,15 +118,59 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
+
+    FileNode:
+      type: object
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        type:
+          type: string
+          enum: [file, dir]
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/FileNode"
+      required: [name, path, type]
+
+    FileTree:
+      type: object
+      properties:
+        root:
+          $ref: "#/components/schemas/FileNode"
+        projectName:
+          type: string
+      required: [root, projectName]
+
+    FileContent:
+      type: object
+      properties:
+        path:
+          type: string
+        content:
+          type: string
+        language:
+          type: string
+      required: [path, content, language]
+
+    RunInput:
+      type: object
+      properties:
+        command:
+          type: string
+          enum: [pipeline, tests, both]
+      required: [command]
+
     CodeInput:
       type: object
       properties:
         code:
           type: string
-      required:
-        - code
+      required: [code]
+
     ExecutionResult:
       type: object
       properties:
@@ -70,7 +180,11 @@ components:
           type: string
         exitCode:
           type: integer
-      required:
-        - stdout
-        - stderr
-        - exitCode
+      required: [stdout, stderr, exitCode]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]

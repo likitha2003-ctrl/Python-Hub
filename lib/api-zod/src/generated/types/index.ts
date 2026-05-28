@@ -7,5 +7,13 @@
  */
 
 export * from './codeInput';
+export * from './errorResponse';
 export * from './executionResult';
+export * from './fileContent';
+export * from './fileNode';
+export * from './fileNodeType';
+export * from './fileTree';
+export * from './getFileContentParams';
 export * from './healthStatus';
+export * from './runInput';
+export * from './runInputCommand';

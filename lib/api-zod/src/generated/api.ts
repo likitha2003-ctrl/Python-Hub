@@ -9,7 +9,6 @@ import * as zod from 'zod';
 
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -18,8 +17,52 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
- * Executes a snippet of Python code and returns stdout/stderr
- * @summary Execute Python code
+ * Returns the full file and directory tree of the Python project
+ * @summary Get project file tree
+ */
+export const GetProjectTreeResponse = zod.object({
+  "root": zod.object({
+  "name": zod.string(),
+  "path": zod.string(),
+  "type": zod.enum(['file', 'dir']),
+  "children": zod.array(zod.unknown()).optional()
+}),
+  "projectName": zod.string()
+})
+
+
+/**
+ * Returns the text content of a file within the project
+ * @summary Get file content
+ */
+export const GetFileContentQueryParams = zod.object({
+  "path": zod.coerce.string().describe('Relative path within the project (e.g. src\/normalizer.py)')
+})
+
+export const GetFileContentResponse = zod.object({
+  "path": zod.string(),
+  "content": zod.string(),
+  "language": zod.string()
+})
+
+
+/**
+ * Runs a predefined project command (pipeline or tests) and streams the output
+ * @summary Run a project command
+ */
+export const RunCommandBody = zod.object({
+  "command": zod.enum(['pipeline', 'tests', 'both'])
+})
+
+export const RunCommandResponse = zod.object({
+  "stdout": zod.string(),
+  "stderr": zod.string(),
+  "exitCode": zod.number()
+})
+
+
+/**
+ * @summary Execute arbitrary Python code
  */
 export const ExecuteCodeBody = zod.object({
   "code": zod.string()

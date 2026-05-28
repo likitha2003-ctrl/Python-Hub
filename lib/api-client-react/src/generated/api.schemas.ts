@@ -9,6 +9,45 @@ export interface HealthStatus {
   status: string;
 }
 
+export type FileNodeType = typeof FileNodeType[keyof typeof FileNodeType];
+
+
+export const FileNodeType = {
+  file: 'file',
+  dir: 'dir',
+} as const;
+
+export interface FileNode {
+  name: string;
+  path: string;
+  type: FileNodeType;
+  children?: FileNode[];
+}
+
+export interface FileTree {
+  root: FileNode;
+  projectName: string;
+}
+
+export interface FileContent {
+  path: string;
+  content: string;
+  language: string;
+}
+
+export type RunInputCommand = typeof RunInputCommand[keyof typeof RunInputCommand];
+
+
+export const RunInputCommand = {
+  pipeline: 'pipeline',
+  tests: 'tests',
+  both: 'both',
+} as const;
+
+export interface RunInput {
+  command: RunInputCommand;
+}
+
 export interface CodeInput {
   code: string;
 }
@@ -18,4 +57,15 @@ export interface ExecutionResult {
   stderr: string;
   exitCode: number;
 }
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export type GetFileContentParams = {
+/**
+ * Relative path within the project (e.g. src/normalizer.py)
+ */
+path: string;
+};
 
