@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Confirm Python version
+        run: python --version
+
+      - name: Run unit tests
+        run: python -m unittest tests/test_normalizer.py -v
+
+      - name: Run normalizer pipeline
+        run: python main.py
+
+      - name: Verify output file was created
+        run: |
+          test -f data/output/normalized_telemetry.json && \
+          echo "Output file exists:" && \
+          cat data/output/normalized_telemetry.json
